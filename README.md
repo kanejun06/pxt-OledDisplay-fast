@@ -10,6 +10,7 @@ It keeps the original API and adds faster helpers for bitmap-heavy lessons:
 - `drawBitmap16Scale8Fast(column, bitmap16)` as an alias
 
 The fast bitmap helper sends several data bytes in one I2C write instead of resetting the OLED address for every byte.
+Version 0.0.4 sends each 128-byte page of `draw16Scale8()` in a single I2C data write.
 
 For a full 128x128 image, use 16 page rows and 128 columns:
 

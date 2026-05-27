@@ -149,6 +149,10 @@ namespace groveoleddisplay {
             pins.i2cWriteBuffer(0x3c, buf, false);
         }
 
+        private sendByteBuffer(buf: Buffer) {
+            pins.i2cWriteBuffer(0x3c, buf, false);
+        }
+
         private sendCommand(cmd:number) {
             
             let buf: Buffer = pins.createBuffer(2);
@@ -228,9 +232,7 @@ namespace groveoleddisplay {
                 this.sendCommand(0xb0 + row);
                 this.sendCommand(0x0);
                 this.sendCommand(0x10);
-                for (let sent = 0; sent < 128; sent += 32) {
-                    this.sendRepeatedData(0x00, 32);
-                }
+                this.sendRepeatedData(0x00, 128);
             }
         }
 
@@ -366,7 +368,8 @@ namespace groveoleddisplay {
             if (y_start < 0) y_start = 0;
             if (y_start > 127) y_start = 127;
             let safeColumns = Math.min(128, 128 - y_start);
-            let rowBuffer: number[] = [];
+            let rowBuffer: Buffer = pins.createBuffer(129);
+            rowBuffer[0] = 0x40;
 
             for (let page = 0; page < 16; page++) {
                 this.sendCommand(0xb0 + page);
@@ -375,21 +378,26 @@ namespace groveoleddisplay {
 
                 let sourcePage = Math.floor(page / 8);
                 let sourceBit = page % 8;
-                rowBuffer = [];
+                let target = 1;
 
                 for (let sourceX = 0; sourceX < 16; sourceX++) {
                     let sourceByte = bitmap16[sourcePage * 16 + sourceX];
                     let expanded = (sourceByte & (0x01 << sourceBit)) ? 0xff : 0x00;
                     for (let repeat = 0; repeat < 8; repeat++) {
-                        rowBuffer.push(expanded);
+                        rowBuffer[target] = expanded;
+                        target++;
                     }
                 }
 
-                let sent = 0;
-                while (sent < safeColumns) {
-                    let count = Math.min(32, safeColumns - sent);
-                    this.sendDataBuffer(rowBuffer, sent, count);
-                    sent += count;
+                if (safeColumns == 128) {
+                    this.sendByteBuffer(rowBuffer);
+                } else {
+                    let partialBuffer: Buffer = pins.createBuffer(safeColumns + 1);
+                    partialBuffer[0] = 0x40;
+                    for (let i = 0; i < safeColumns; i++) {
+                        partialBuffer[i + 1] = rowBuffer[i + 1];
+                    }
+                    this.sendByteBuffer(partialBuffer);
                 }
             }
         }
