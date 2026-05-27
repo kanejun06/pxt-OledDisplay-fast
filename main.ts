@@ -342,6 +342,46 @@ namespace groveoleddisplay {
             }
         }
 
+        /**
+         * Draw a 16x16 bitmap scaled to 128x128 with fewer pasted bytes
+         * @param y_start column to start, range from 0 to 127.
+         * @param bitmap16 16x16 bitmap bytes in page-major vertical 1bpp order.
+         */
+        //% blockId=grove_oled_draw_bitmap_16_scale8_fast block="%oled|Draw 16x16 bitmap scale 8 fast at column|%y_start|, bitmap:|%bitmap16|"
+        //% y_start.min=0 y_start.max=127
+        //% advanced=true
+        drawBitmap16Scale8Fast(y_start:number, bitmap16:number[]) {
+            if (y_start < 0) y_start = 0;
+            if (y_start > 127) y_start = 127;
+            let safeColumns = Math.min(128, 128 - y_start);
+            let rowBuffer: number[] = [];
+
+            for (let page = 0; page < 16; page++) {
+                this.sendCommand(0xb0 + page);
+                this.sendCommand(y_start % 16);
+                this.sendCommand(Math.floor(y_start / 16) + 0x10);
+
+                let sourcePage = Math.floor(page / 8);
+                let sourceBit = page % 8;
+                rowBuffer = [];
+
+                for (let sourceX = 0; sourceX < 16; sourceX++) {
+                    let sourceByte = bitmap16[sourcePage * 16 + sourceX];
+                    let expanded = (sourceByte & (0x01 << sourceBit)) ? 0xff : 0x00;
+                    for (let repeat = 0; repeat < 8; repeat++) {
+                        rowBuffer.push(expanded);
+                    }
+                }
+
+                let sent = 0;
+                while (sent < safeColumns) {
+                    let count = Math.min(32, safeColumns - sent);
+                    this.sendDataBuffer(rowBuffer, sent, count);
+                    sent += count;
+                }
+            }
+        }
+
         private drawPixel(x: number, y:number, data:number) {
             if (x<0) x = 0;
             else if (x>127) x = 127;
