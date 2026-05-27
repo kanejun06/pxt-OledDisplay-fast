@@ -351,6 +351,18 @@ namespace groveoleddisplay {
         //% y_start.min=0 y_start.max=127
         //% advanced=true
         drawBitmap16Scale8Fast(y_start:number, bitmap16:number[]) {
+            this.draw16Scale8(y_start, bitmap16);
+        }
+
+        /**
+         * Draw a 16x16 bitmap scaled to 128x128 with fewer pasted bytes
+         * @param y_start column to start, range from 0 to 127.
+         * @param bitmap16 16x16 bitmap bytes in page-major vertical 1bpp order.
+         */
+        //% blockId=grove_oled_draw_16_scale_8 block="%oled|Draw 16x16 scale 8 fast at column|%y_start|, bitmap:|%bitmap16|"
+        //% y_start.min=0 y_start.max=127
+        //% advanced=true
+        draw16Scale8(y_start:number, bitmap16:number[]) {
             if (y_start < 0) y_start = 0;
             if (y_start > 127) y_start = 127;
             let safeColumns = Math.min(128, 128 - y_start);
