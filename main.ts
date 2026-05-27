@@ -416,6 +416,60 @@ namespace groveoleddisplay {
             }
         }
 
+        /**
+         * Draw only changed pixels between two 16x16 frames scaled to 128x128
+         * @param y_start column to start, range from 0 to 127.
+         * @param before16 previous 16x16 bitmap bytes in page-major vertical 1bpp order.
+         * @param after16 next 16x16 bitmap bytes in page-major vertical 1bpp order.
+         */
+        //% blockId=grove_oled_draw_16_diff block="%oled|Draw 16x16 scale 8 diff at column|%y_start|, before:|%before16|after:|%after16|"
+        //% y_start.min=0 y_start.max=127
+        //% advanced=true
+        draw16Diff(y_start:number, before16:number[], after16:number[]) {
+            if (y_start < 0) y_start = 0;
+            if (y_start > 127) y_start = 127;
+
+            for (let sourceY = 0; sourceY < 16; sourceY++) {
+                let sourcePage = Math.floor(sourceY / 8);
+                let sourceBit = sourceY % 8;
+                let sourceX = 0;
+
+                while (sourceX < 16) {
+                    let beforeByte = before16[sourcePage * 16 + sourceX];
+                    let afterByte = after16[sourcePage * 16 + sourceX];
+                    let beforeOn = (beforeByte & (0x01 << sourceBit)) != 0;
+                    let afterOn = (afterByte & (0x01 << sourceBit)) != 0;
+
+                    if (beforeOn == afterOn) {
+                        sourceX++;
+                    } else {
+                        let runStart = sourceX;
+                        let runValue = afterOn;
+                        sourceX++;
+
+                        while (sourceX < 16) {
+                            beforeByte = before16[sourcePage * 16 + sourceX];
+                            afterByte = after16[sourcePage * 16 + sourceX];
+                            beforeOn = (beforeByte & (0x01 << sourceBit)) != 0;
+                            afterOn = (afterByte & (0x01 << sourceBit)) != 0;
+                            if (beforeOn == afterOn || afterOn != runValue) break;
+                            sourceX++;
+                        }
+
+                        let oledColumn = y_start + runStart * 8;
+                        let columns = (sourceX - runStart) * 8;
+                        if (oledColumn < 128) {
+                            if (oledColumn + columns > 128) columns = 128 - oledColumn;
+                            this.sendCommand(0xb0 + sourceY);
+                            this.sendCommand(oledColumn % 16);
+                            this.sendCommand(Math.floor(oledColumn / 16) + 0x10);
+                            this.sendRepeatedData(runValue ? 0xff : 0x00, columns);
+                        }
+                    }
+                }
+            }
+        }
+
         private drawPixel(x: number, y:number, data:number) {
             if (x<0) x = 0;
             else if (x>127) x = 127;
