@@ -11,19 +11,19 @@ It keeps the original API and adds faster helpers for bitmap-heavy lessons:
 - `drawBitmap16Scale8Fast(column, bitmap16)` as an alias
 
 The fast bitmap helper sends several data bytes in one I2C write instead of resetting the OLED address for every byte.
-Version 0.0.5 adds `createOledFast()`, avoiding the original slow startup clear.
+Version 0.0.6 makes the existing `createOled()` use the faster startup clear.
 
 For a full 128x128 image, use 16 page rows and 128 columns:
 
 ```typescript
-let oled = groveoleddisplay.createOledFast()
+let oled = groveoleddisplay.createOled()
 oled.drawBitmapFast(0, 0, 16, 128, bitmap128)
 ```
 
 For a 16x16 image scaled to 128x128, paste only the 32-byte source bitmap:
 
 ```typescript
-let oled = groveoleddisplay.createOledFast()
+let oled = groveoleddisplay.createOled()
 oled.draw16Scale8(0, bitmap16)
 ```
 

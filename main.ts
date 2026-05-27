@@ -114,7 +114,7 @@ namespace groveoleddisplay {
         let oled = new SH1107G();
         
         oled.init();
-        oled.clearDisplay();
+        oled.clearDisplayFast();
         
         return oled;
     }
