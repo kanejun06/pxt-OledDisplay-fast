@@ -5,26 +5,25 @@ This is a classroom-oriented fork of the MakeCode Grove - Oled Display(SH1107) p
 It keeps the original API and adds faster helpers for bitmap-heavy lessons:
 
 - `clearDisplayFast()`
+- `createOledFast()`
 - `drawBitmapFast(row, column, rows, columns, bitmap)`
 - `draw16Scale8(column, bitmap16)`
 - `drawBitmap16Scale8Fast(column, bitmap16)` as an alias
 
 The fast bitmap helper sends several data bytes in one I2C write instead of resetting the OLED address for every byte.
-Version 0.0.4 sends each 128-byte page of `draw16Scale8()` in a single I2C data write.
+Version 0.0.5 adds `createOledFast()`, avoiding the original slow startup clear.
 
 For a full 128x128 image, use 16 page rows and 128 columns:
 
 ```typescript
-let oled = groveoleddisplay.createOled()
-oled.clearDisplayFast()
+let oled = groveoleddisplay.createOledFast()
 oled.drawBitmapFast(0, 0, 16, 128, bitmap128)
 ```
 
 For a 16x16 image scaled to 128x128, paste only the 32-byte source bitmap:
 
 ```typescript
-let oled = groveoleddisplay.createOled()
-oled.clearDisplayFast()
+let oled = groveoleddisplay.createOledFast()
 oled.draw16Scale8(0, bitmap16)
 ```
 

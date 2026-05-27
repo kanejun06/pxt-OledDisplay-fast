@@ -119,6 +119,20 @@ namespace groveoleddisplay {
         return oled;
     }
 
+    /**
+     * Create Grove - Oled Display with faster clear
+     */
+    //% blockId=grove_oled_create_fast block="Create Oled Display Fast"
+    export function createOledFast(): SH1107G
+    {
+        let oled = new SH1107G();
+        
+        oled.init();
+        oled.clearDisplayFast();
+        
+        return oled;
+    }
+
     export class SH1107G 
     {
 
