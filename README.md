@@ -1,6 +1,21 @@
-# Grove - Oled Display 
+# Grove - Oled Display Fast
 
-This is Makecode Grove - Oled Display(SH1107) package for micro:bit.
+This is a classroom-oriented fork of the MakeCode Grove - Oled Display(SH1107) package for micro:bit.
+
+It keeps the original API and adds faster helpers for bitmap-heavy lessons:
+
+- `clearDisplayFast()`
+- `drawBitmapFast(row, column, rows, columns, bitmap)`
+
+The fast bitmap helper sends several data bytes in one I2C write instead of resetting the OLED address for every byte.
+
+For a full 128x128 image, use 16 page rows and 128 columns:
+
+```typescript
+let oled = groveoleddisplay.createOled()
+oled.clearDisplayFast()
+oled.drawBitmapFast(0, 0, 16, 128, bitmap128)
+```
 
 ![image](https://user-images.githubusercontent.com/18615354/47497569-1b9c0c00-d88d-11e8-98fb-06a9d1d6b7a3.png)
 

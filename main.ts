@@ -131,6 +131,24 @@ namespace groveoleddisplay {
             // pins.i2cWriteBuffer(0x3c, buf);
         }
 
+        private sendDataBuffer(data: number[], start: number, count: number) {
+            let buf: Buffer = pins.createBuffer(count + 1);
+            buf[0] = 0x40; // SeeedGrayOLED_Data_Mode
+            for (let i = 0; i < count; i++) {
+                buf[i + 1] = data[start + i];
+            }
+            pins.i2cWriteBuffer(0x3c, buf, false);
+        }
+
+        private sendRepeatedData(data: number, count: number) {
+            let buf: Buffer = pins.createBuffer(count + 1);
+            buf[0] = 0x40; // SeeedGrayOLED_Data_Mode
+            for (let i = 0; i < count; i++) {
+                buf[i + 1] = data;
+            }
+            pins.i2cWriteBuffer(0x3c, buf, false);
+        }
+
         private sendCommand(cmd:number) {
             
             let buf: Buffer = pins.createBuffer(2);
@@ -197,6 +215,21 @@ namespace groveoleddisplay {
                 this.sendCommand(0x10);
                 for(let j=0; j<128;j++){ 
                   this.sendData(0x00);  
+                }
+            }
+        }
+
+        /**
+         * Clear display with fewer I2C writes
+         */
+        //% blockId=grove_oled_clear_display_fast block="%oled|Clear display fast"
+        clearDisplayFast() {
+            for (let row = 0; row < 16; row++) {
+                this.sendCommand(0xb0 + row);
+                this.sendCommand(0x0);
+                this.sendCommand(0x10);
+                for (let sent = 0; sent < 128; sent += 32) {
+                    this.sendRepeatedData(0x00, 32);
                 }
             }
         }
@@ -268,6 +301,45 @@ namespace groveoleddisplay {
                 x_offset ++ ;
             }
             
+        }
+
+        /**
+         * Display a bitmap with fewer I2C writes
+         * @param x_start page row to start, range from 0 to 15.
+         * @param y_start column to start, range from 0 to 127.
+         * @param row_number number of page rows.
+         * @param column_number number of columns.
+         * @param bitmap bitmap bytes in page-major order.
+         */
+        //% blockId=grove_oled_draw_bitmap_fast block="%oled|Draw bitmap fast start at row|%x_start|and column|%y_start|, size: row|%row_number|and column|%column_number|, bitmap:|%bitmap|"
+        //% x_start.min=0 x_start.max=15
+        //% y_start.min=0 y_start.max=127
+        //% row_number.min=1 row_number.max=16
+        //% column_number.min=1 column_number.max=128
+        //% advanced=true
+        drawBitmapFast(x_start:number, y_start:number, row_number:number, column_number:number, bitmap:number[]) {
+            let x_end = x_start + row_number;
+            let y_end = y_start + column_number;
+            if (x_start < 0) x_start = 0;
+            if (y_start < 0) y_start = 0;
+            if (x_end > 16) x_end = 16;
+            if (y_end > 128) y_end = 128;
+
+            let safeColumns = y_end - y_start;
+            let offset = 0;
+            for (let row = x_start; row < x_end; row++) {
+                this.sendCommand(0xb0 + row);
+                this.sendCommand(y_start % 16);
+                this.sendCommand(Math.floor(y_start / 16) + 0x10);
+
+                let sent = 0;
+                while (sent < safeColumns) {
+                    let count = Math.min(32, safeColumns - sent);
+                    this.sendDataBuffer(bitmap, offset + sent, count);
+                    sent += count;
+                }
+                offset += column_number;
+            }
         }
 
         private drawPixel(x: number, y:number, data:number) {
