@@ -9,10 +9,12 @@ It keeps the original API and adds faster helpers for bitmap-heavy lessons:
 - `drawBitmapFast(row, column, rows, columns, bitmap)`
 - `draw16Scale8(column, bitmap16)`
 - `draw16Diff(column, before16, after16)`
+- `showImage16(column, bitmap16)`
+- `showAnimation16(column, frames16, frameCount, delay)`
 - `drawBitmap16Scale8Fast(column, bitmap16)` as an alias
 
 The fast bitmap helper sends several data bytes in one I2C write instead of resetting the OLED address for every byte.
-Version 0.0.7 adds `draw16Diff()` for faster 16x16 animations.
+Version 0.0.8 adds classroom-friendly one-block helpers for image and animation display.
 
 For a full 128x128 image, use 16 page rows and 128 columns:
 

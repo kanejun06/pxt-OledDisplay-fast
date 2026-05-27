@@ -470,6 +470,132 @@ namespace groveoleddisplay {
             }
         }
 
+        private draw16Scale8Flat(y_start:number, frames16:number[], frameIndex:number) {
+            if (y_start < 0) y_start = 0;
+            if (y_start > 127) y_start = 127;
+            let safeColumns = Math.min(128, 128 - y_start);
+            let rowBuffer: Buffer = pins.createBuffer(129);
+            rowBuffer[0] = 0x40;
+            let frameOffset = frameIndex * 32;
+
+            for (let page = 0; page < 16; page++) {
+                this.sendCommand(0xb0 + page);
+                this.sendCommand(y_start % 16);
+                this.sendCommand(Math.floor(y_start / 16) + 0x10);
+
+                let sourcePage = Math.floor(page / 8);
+                let sourceBit = page % 8;
+                let target = 1;
+
+                for (let sourceX = 0; sourceX < 16; sourceX++) {
+                    let sourceByte = frames16[frameOffset + sourcePage * 16 + sourceX];
+                    let expanded = (sourceByte & (0x01 << sourceBit)) ? 0xff : 0x00;
+                    for (let repeat = 0; repeat < 8; repeat++) {
+                        rowBuffer[target] = expanded;
+                        target++;
+                    }
+                }
+
+                if (safeColumns == 128) {
+                    this.sendByteBuffer(rowBuffer);
+                } else {
+                    let partialBuffer: Buffer = pins.createBuffer(safeColumns + 1);
+                    partialBuffer[0] = 0x40;
+                    for (let i = 0; i < safeColumns; i++) {
+                        partialBuffer[i + 1] = rowBuffer[i + 1];
+                    }
+                    this.sendByteBuffer(partialBuffer);
+                }
+            }
+        }
+
+        private draw16DiffFlat(y_start:number, frames16:number[], beforeFrame:number, afterFrame:number) {
+            if (y_start < 0) y_start = 0;
+            if (y_start > 127) y_start = 127;
+            let beforeOffset = beforeFrame * 32;
+            let afterOffset = afterFrame * 32;
+
+            for (let sourceY = 0; sourceY < 16; sourceY++) {
+                let sourcePage = Math.floor(sourceY / 8);
+                let sourceBit = sourceY % 8;
+                let sourceX = 0;
+
+                while (sourceX < 16) {
+                    let byteOffset = sourcePage * 16 + sourceX;
+                    let beforeByte = frames16[beforeOffset + byteOffset];
+                    let afterByte = frames16[afterOffset + byteOffset];
+                    let beforeOn = (beforeByte & (0x01 << sourceBit)) != 0;
+                    let afterOn = (afterByte & (0x01 << sourceBit)) != 0;
+
+                    if (beforeOn == afterOn) {
+                        sourceX++;
+                    } else {
+                        let runStart = sourceX;
+                        let runValue = afterOn;
+                        sourceX++;
+
+                        while (sourceX < 16) {
+                            byteOffset = sourcePage * 16 + sourceX;
+                            beforeByte = frames16[beforeOffset + byteOffset];
+                            afterByte = frames16[afterOffset + byteOffset];
+                            beforeOn = (beforeByte & (0x01 << sourceBit)) != 0;
+                            afterOn = (afterByte & (0x01 << sourceBit)) != 0;
+                            if (beforeOn == afterOn || afterOn != runValue) break;
+                            sourceX++;
+                        }
+
+                        let oledColumn = y_start + runStart * 8;
+                        let columns = (sourceX - runStart) * 8;
+                        if (oledColumn < 128) {
+                            if (oledColumn + columns > 128) columns = 128 - oledColumn;
+                            this.sendCommand(0xb0 + sourceY);
+                            this.sendCommand(oledColumn % 16);
+                            this.sendCommand(Math.floor(oledColumn / 16) + 0x10);
+                            this.sendRepeatedData(runValue ? 0xff : 0x00, columns);
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Show one 16x16 image scaled to 128x128
+         * @param y_start column to start, range from 0 to 127.
+         * @param bitmap16 16x16 bitmap bytes in page-major vertical 1bpp order.
+         */
+        //% blockId=grove_oled_show_image_16 block="%oled|Show 16x16 image at column|%y_start|, image:|%bitmap16|"
+        //% y_start.min=0 y_start.max=127
+        showImage16(y_start:number, bitmap16:number[]) {
+            this.draw16Scale8(y_start, bitmap16);
+        }
+
+        /**
+         * Show 16x16 animation scaled to 128x128 in the background
+         * @param y_start column to start, range from 0 to 127.
+         * @param frames16 flattened 16x16 frame bytes, 32 bytes per frame.
+         * @param frameCount number of frames.
+         * @param delay frame delay in milliseconds.
+         */
+        //% blockId=grove_oled_show_animation_16 block="%oled|Show 16x16 animation at column|%y_start|, frames:|%frames16|frame count|%frameCount|delay(ms)|%delay"
+        //% y_start.min=0 y_start.max=127
+        //% frameCount.min=1 frameCount.max=64
+        //% delay.min=20 delay.max=5000
+        showAnimation16(y_start:number, frames16:number[], frameCount:number, delay:number) {
+            if (frameCount <= 0) return;
+            if (delay < 20) delay = 20;
+            let oled = this;
+            control.inBackground(function () {
+                let current = 0;
+                oled.draw16Scale8Flat(y_start, frames16, 0);
+                while (true) {
+                    let next = (current + 1) % frameCount;
+                    oled.draw16DiffFlat(y_start, frames16, current, next);
+                    current = next;
+                    basic.pause(delay);
+                }
+            });
+        }
+
         private drawPixel(x: number, y:number, data:number) {
             if (x<0) x = 0;
             else if (x>127) x = 127;
