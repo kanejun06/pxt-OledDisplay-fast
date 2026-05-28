@@ -171,17 +171,12 @@ namespace groveoleddisplay {
         }
 
         private sendRepeatedData(data: number, count: number) {
-            let sent = 0;
-            while (sent < count) {
-                let chunk = Math.min(32, count - sent);
-                let buf: Buffer = pins.createBuffer(chunk + 1);
-                buf[0] = 0x40; // SeeedGrayOLED_Data_Mode
-                for (let i = 0; i < chunk; i++) {
-                    buf[i + 1] = data;
-                }
-                pins.i2cWriteBuffer(0x3c, buf, false);
-                sent += chunk;
+            let buf: Buffer = pins.createBuffer(count + 1);
+            buf[0] = 0x40; // SeeedGrayOLED_Data_Mode
+            for (let i = 0; i < count; i++) {
+                buf[i + 1] = data;
             }
+            pins.i2cWriteBuffer(0x3c, buf, false);
         }
 
         private sendByteBuffer(buf: Buffer) {
@@ -403,6 +398,8 @@ namespace groveoleddisplay {
             if (y_start < 0) y_start = 0;
             if (y_start > 127) y_start = 127;
             let safeColumns = Math.min(128, 128 - y_start);
+            let rowBuffer: Buffer = pins.createBuffer(129);
+            rowBuffer[0] = 0x40;
 
             for (let page = 0; page < 16; page++) {
                 this.sendCommand(0xb0 + page);
@@ -411,97 +408,26 @@ namespace groveoleddisplay {
 
                 let sourcePage = Math.floor(page / 8);
                 let sourceBit = page % 8;
-                let sent = 0;
-                while (sent < safeColumns) {
-                    let chunk = Math.min(32, safeColumns - sent);
-                    let rowBuffer: Buffer = pins.createBuffer(chunk + 1);
-                    rowBuffer[0] = 0x40;
-                    for (let target = 0; target < chunk; target++) {
-                        let sourceX = Math.floor((sent + target) / 8);
-                        let sourceByte = bitmap16[sourcePage * 16 + sourceX];
-                        rowBuffer[target + 1] = (sourceByte & (0x01 << sourceBit)) ? 0xff : 0x00;
+                let target = 1;
+
+                for (let sourceX = 0; sourceX < 16; sourceX++) {
+                    let sourceByte = bitmap16[sourcePage * 16 + sourceX];
+                    let expanded = (sourceByte & (0x01 << sourceBit)) ? 0xff : 0x00;
+                    for (let repeat = 0; repeat < 8; repeat++) {
+                        rowBuffer[target] = expanded;
+                        target++;
                     }
-                    this.sendByteBuffer(rowBuffer);
-                    sent += chunk;
                 }
-            }
-        }
 
-        private draw16Scale8Flat(y_start:number, frames16:number[], frameIndex:number) {
-            if (y_start < 0) y_start = 0;
-            if (y_start > 127) y_start = 127;
-            let safeColumns = Math.min(128, 128 - y_start);
-            let frameOffset = frameIndex * 32;
-
-            for (let page = 0; page < 16; page++) {
-                this.sendCommand(0xb0 + page);
-                this.sendCommand(y_start % 16);
-                this.sendCommand(Math.floor(y_start / 16) + 0x10);
-
-                let sourcePage = Math.floor(page / 8);
-                let sourceBit = page % 8;
-                let sent = 0;
-
-                while (sent < safeColumns) {
-                    let chunk = Math.min(32, safeColumns - sent);
-                    let rowBuffer: Buffer = pins.createBuffer(chunk + 1);
-                    rowBuffer[0] = 0x40;
-                    for (let target = 0; target < chunk; target++) {
-                        let sourceX = Math.floor((sent + target) / 8);
-                        let sourceByte = frames16[frameOffset + sourcePage * 16 + sourceX];
-                        rowBuffer[target + 1] = (sourceByte & (0x01 << sourceBit)) ? 0xff : 0x00;
-                    }
+                if (safeColumns == 128) {
                     this.sendByteBuffer(rowBuffer);
-                    sent += chunk;
-                }
-            }
-        }
-
-        private draw16DiffFlat(y_start:number, frames16:number[], beforeFrame:number, afterFrame:number) {
-            if (y_start < 0) y_start = 0;
-            if (y_start > 127) y_start = 127;
-            let beforeOffset = beforeFrame * 32;
-            let afterOffset = afterFrame * 32;
-
-            for (let sourceY = 0; sourceY < 16; sourceY++) {
-                let sourcePage = Math.floor(sourceY / 8);
-                let sourceBit = sourceY % 8;
-                let sourceX = 0;
-
-                while (sourceX < 16) {
-                    let byteOffset = sourcePage * 16 + sourceX;
-                    let beforeByte = frames16[beforeOffset + byteOffset];
-                    let afterByte = frames16[afterOffset + byteOffset];
-                    let beforeOn = (beforeByte & (0x01 << sourceBit)) != 0;
-                    let afterOn = (afterByte & (0x01 << sourceBit)) != 0;
-
-                    if (beforeOn == afterOn) {
-                        sourceX++;
-                    } else {
-                        let runStart = sourceX;
-                        let runValue = afterOn;
-                        sourceX++;
-
-                        while (sourceX < 16) {
-                            byteOffset = sourcePage * 16 + sourceX;
-                            beforeByte = frames16[beforeOffset + byteOffset];
-                            afterByte = frames16[afterOffset + byteOffset];
-                            beforeOn = (beforeByte & (0x01 << sourceBit)) != 0;
-                            afterOn = (afterByte & (0x01 << sourceBit)) != 0;
-                            if (beforeOn == afterOn || afterOn != runValue) break;
-                            sourceX++;
-                        }
-
-                        let oledColumn = y_start + runStart * 8;
-                        let columns = (sourceX - runStart) * 8;
-                        if (oledColumn < 128) {
-                            if (oledColumn + columns > 128) columns = 128 - oledColumn;
-                            this.sendCommand(0xb0 + sourceY);
-                            this.sendCommand(oledColumn % 16);
-                            this.sendCommand(Math.floor(oledColumn / 16) + 0x10);
-                            this.sendRepeatedData(runValue ? 0xff : 0x00, columns);
-                        }
+                } else {
+                    let partialBuffer: Buffer = pins.createBuffer(safeColumns + 1);
+                    partialBuffer[0] = 0x40;
+                    for (let i = 0; i < safeColumns; i++) {
+                        partialBuffer[i + 1] = rowBuffer[i + 1];
                     }
+                    this.sendByteBuffer(partialBuffer);
                 }
             }
         }
@@ -540,6 +466,94 @@ namespace groveoleddisplay {
                         while (sourceX < 16) {
                             beforeByte = before16[sourcePage * 16 + sourceX];
                             afterByte = after16[sourcePage * 16 + sourceX];
+                            beforeOn = (beforeByte & (0x01 << sourceBit)) != 0;
+                            afterOn = (afterByte & (0x01 << sourceBit)) != 0;
+                            if (beforeOn == afterOn || afterOn != runValue) break;
+                            sourceX++;
+                        }
+
+                        let oledColumn = y_start + runStart * 8;
+                        let columns = (sourceX - runStart) * 8;
+                        if (oledColumn < 128) {
+                            if (oledColumn + columns > 128) columns = 128 - oledColumn;
+                            this.sendCommand(0xb0 + sourceY);
+                            this.sendCommand(oledColumn % 16);
+                            this.sendCommand(Math.floor(oledColumn / 16) + 0x10);
+                            this.sendRepeatedData(runValue ? 0xff : 0x00, columns);
+                        }
+                    }
+                }
+            }
+        }
+
+        private draw16Scale8Flat(y_start:number, frames16:number[], frameIndex:number) {
+            if (y_start < 0) y_start = 0;
+            if (y_start > 127) y_start = 127;
+            let safeColumns = Math.min(128, 128 - y_start);
+            let rowBuffer: Buffer = pins.createBuffer(129);
+            rowBuffer[0] = 0x40;
+            let frameOffset = frameIndex * 32;
+
+            for (let page = 0; page < 16; page++) {
+                this.sendCommand(0xb0 + page);
+                this.sendCommand(y_start % 16);
+                this.sendCommand(Math.floor(y_start / 16) + 0x10);
+
+                let sourcePage = Math.floor(page / 8);
+                let sourceBit = page % 8;
+                let target = 1;
+
+                for (let sourceX = 0; sourceX < 16; sourceX++) {
+                    let sourceByte = frames16[frameOffset + sourcePage * 16 + sourceX];
+                    let expanded = (sourceByte & (0x01 << sourceBit)) ? 0xff : 0x00;
+                    for (let repeat = 0; repeat < 8; repeat++) {
+                        rowBuffer[target] = expanded;
+                        target++;
+                    }
+                }
+
+                if (safeColumns == 128) {
+                    this.sendByteBuffer(rowBuffer);
+                } else {
+                    let partialBuffer: Buffer = pins.createBuffer(safeColumns + 1);
+                    partialBuffer[0] = 0x40;
+                    for (let i = 0; i < safeColumns; i++) {
+                        partialBuffer[i + 1] = rowBuffer[i + 1];
+                    }
+                    this.sendByteBuffer(partialBuffer);
+                }
+            }
+        }
+
+        private draw16DiffFlat(y_start:number, frames16:number[], beforeFrame:number, afterFrame:number) {
+            if (y_start < 0) y_start = 0;
+            if (y_start > 127) y_start = 127;
+            let beforeOffset = beforeFrame * 32;
+            let afterOffset = afterFrame * 32;
+
+            for (let sourceY = 0; sourceY < 16; sourceY++) {
+                let sourcePage = Math.floor(sourceY / 8);
+                let sourceBit = sourceY % 8;
+                let sourceX = 0;
+
+                while (sourceX < 16) {
+                    let byteOffset = sourcePage * 16 + sourceX;
+                    let beforeByte = frames16[beforeOffset + byteOffset];
+                    let afterByte = frames16[afterOffset + byteOffset];
+                    let beforeOn = (beforeByte & (0x01 << sourceBit)) != 0;
+                    let afterOn = (afterByte & (0x01 << sourceBit)) != 0;
+
+                    if (beforeOn == afterOn) {
+                        sourceX++;
+                    } else {
+                        let runStart = sourceX;
+                        let runValue = afterOn;
+                        sourceX++;
+
+                        while (sourceX < 16) {
+                            byteOffset = sourcePage * 16 + sourceX;
+                            beforeByte = frames16[beforeOffset + byteOffset];
+                            afterByte = frames16[afterOffset + byteOffset];
                             beforeOn = (beforeByte & (0x01 << sourceBit)) != 0;
                             afterOn = (afterByte & (0x01 << sourceBit)) != 0;
                             if (beforeOn == afterOn || afterOn != runValue) break;
