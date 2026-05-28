@@ -151,6 +151,9 @@ namespace groveoleddisplay {
 
     export class SH1107G 
     {
+        private animation16Started = false;
+        private animation16Current = 0;
+
 
         private sendData(data:number) {
             let buf: Buffer = pins.createBuffer(2);
@@ -582,7 +585,81 @@ namespace groveoleddisplay {
         //% blockId=grove_oled_show_image_16 block="%oled|Show 16x16 image at column|%y_start|, image:|%bitmap16|"
         //% y_start.min=0 y_start.max=127
         showImage16(y_start:number, bitmap16:number[]) {
+            this.animation16Started = false;
+            this.animation16Current = 0;
             this.draw16Scale8(y_start, bitmap16);
+        }
+
+        private drawAnimation16Frame(y_start:number, frame:number, frame0:number[], frame1:number[], frame2:number[], frame3:number[]) {
+            if (frame == 1) {
+                this.draw16Scale8(y_start, frame1);
+            } else if (frame == 2) {
+                this.draw16Scale8(y_start, frame2);
+            } else if (frame == 3) {
+                this.draw16Scale8(y_start, frame3);
+            } else {
+                this.draw16Scale8(y_start, frame0);
+            }
+        }
+
+        private drawAnimation16Diff(y_start:number, before:number, after:number, frame0:number[], frame1:number[], frame2:number[], frame3:number[]) {
+            if (before == 0 && after == 1) {
+                this.draw16Diff(y_start, frame0, frame1);
+            } else if (before == 1 && after == 2) {
+                this.draw16Diff(y_start, frame1, frame2);
+            } else if (before == 2 && after == 3) {
+                this.draw16Diff(y_start, frame2, frame3);
+            } else if (before == 3 && after == 0) {
+                this.draw16Diff(y_start, frame3, frame0);
+            } else if (before == 0 && after == 2) {
+                this.draw16Diff(y_start, frame0, frame2);
+            } else if (before == 0 && after == 3) {
+                this.draw16Diff(y_start, frame0, frame3);
+            } else if (before == 1 && after == 0) {
+                this.draw16Diff(y_start, frame1, frame0);
+            } else if (before == 2 && after == 0) {
+                this.draw16Diff(y_start, frame2, frame0);
+            } else {
+                this.drawAnimation16Frame(y_start, after, frame0, frame1, frame2, frame3);
+            }
+        }
+
+        /**
+         * Show one step of a 16x16 animation. Use frameCount 0 or 1 for a still image.
+         * @param y_start column to start, range from 0 to 127.
+         * @param frameCount number of frames to play, 0 to 4. 0 shows only image 1.
+         * @param frame0 first 16x16 image.
+         * @param frame1 second 16x16 image.
+         * @param frame2 third 16x16 image.
+         * @param frame3 fourth 16x16 image.
+         */
+        //% blockId=grove_oled_show_animation_16_simple block="%oled|Show 16x16 animation at column|%y_start|frames|%frameCount|image 1|%frame0|image 2|%frame1|image 3|%frame2|image 4|%frame3"
+        //% y_start.min=0 y_start.max=127
+        //% frameCount.min=0 frameCount.max=4
+        showAnimation16Simple(y_start:number, frameCount:number, frame0:number[], frame1:number[], frame2:number[], frame3:number[]) {
+            if (frameCount < 0) frameCount = 0;
+            if (frameCount > 4) frameCount = 4;
+
+            if (frameCount <= 1) {
+                if (!this.animation16Started || this.animation16Current != 0) {
+                    this.draw16Scale8(y_start, frame0);
+                    this.animation16Started = true;
+                    this.animation16Current = 0;
+                }
+                return;
+            }
+
+            if (!this.animation16Started || this.animation16Current < 0 || this.animation16Current >= frameCount) {
+                this.draw16Scale8(y_start, frame0);
+                this.animation16Started = true;
+                this.animation16Current = 0;
+                return;
+            }
+
+            let next = this.animation16Current + 1;
+            if (next >= frameCount) next = 0;
+            this.drawAnimation16Diff(y_start, this.animation16Current, next, frame0, frame1, frame2, frame3);
+            this.animation16Current = next;
         }
 
         /**
