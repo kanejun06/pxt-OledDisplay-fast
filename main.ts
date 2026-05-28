@@ -104,6 +104,10 @@ const oledFont: uint8[] = [
  */
 //% weight=10 color=#9F79EE icon="\uf108" block="OLED Display"
 namespace groveoleddisplay {
+    let animation16Frame0: number[] = [];
+    let animation16Frame1: number[] = [];
+    let animation16Frame2: number[] = [];
+    let animation16Frame3: number[] = [];
 
     /**
      * Create Grove - Oled Display
@@ -153,10 +157,6 @@ namespace groveoleddisplay {
     {
         private animation16Started = false;
         private animation16Current = 0;
-        private animation16Frame0: number[] = [];
-        private animation16Frame1: number[] = [];
-        private animation16Frame2: number[] = [];
-        private animation16Frame3: number[] = [];
 
 
         private sendData(data:number) {
@@ -595,14 +595,14 @@ namespace groveoleddisplay {
         }
 
         private getAnimation16Frame(frame:number): number[] {
-            if (frame == 1 && this.animation16Frame1.length > 0) {
-                return this.animation16Frame1;
-            } else if (frame == 2 && this.animation16Frame2.length > 0) {
-                return this.animation16Frame2;
-            } else if (frame == 3 && this.animation16Frame3.length > 0) {
-                return this.animation16Frame3;
+            if (frame == 1 && animation16Frame1.length > 0) {
+                return animation16Frame1;
+            } else if (frame == 2 && animation16Frame2.length > 0) {
+                return animation16Frame2;
+            } else if (frame == 3 && animation16Frame3.length > 0) {
+                return animation16Frame3;
             }
-            return this.animation16Frame0;
+            return animation16Frame0;
         }
 
         /**
@@ -614,13 +614,13 @@ namespace groveoleddisplay {
         //% frame.min=1 frame.max=4
         setAnimation16Frame(frame:number, bitmap16:number[]) {
             if (frame <= 1) {
-                this.animation16Frame0 = bitmap16;
+                animation16Frame0 = bitmap16;
             } else if (frame == 2) {
-                this.animation16Frame1 = bitmap16;
+                animation16Frame1 = bitmap16;
             } else if (frame == 3) {
-                this.animation16Frame2 = bitmap16;
+                animation16Frame2 = bitmap16;
             } else {
-                this.animation16Frame3 = bitmap16;
+                animation16Frame3 = bitmap16;
             }
             this.animation16Started = false;
             this.animation16Current = 0;
@@ -635,13 +635,13 @@ namespace groveoleddisplay {
         //% y_start.min=0 y_start.max=127
         //% frameCount.min=0 frameCount.max=4
         showRegisteredAnimation16(y_start:number, frameCount:number) {
-            if (this.animation16Frame0.length <= 0) return;
+            if (animation16Frame0.length <= 0) return;
             if (frameCount < 0) frameCount = 0;
             if (frameCount > 4) frameCount = 4;
 
             if (frameCount <= 1) {
                 if (!this.animation16Started || this.animation16Current != 0) {
-                    this.draw16Scale8(y_start, this.animation16Frame0);
+                    this.draw16Scale8(y_start, animation16Frame0);
                     this.animation16Started = true;
                     this.animation16Current = 0;
                 }
@@ -649,7 +649,7 @@ namespace groveoleddisplay {
             }
 
             if (!this.animation16Started || this.animation16Current < 0 || this.animation16Current >= frameCount) {
-                this.draw16Scale8(y_start, this.animation16Frame0);
+                this.draw16Scale8(y_start, animation16Frame0);
                 this.animation16Started = true;
                 this.animation16Current = 0;
                 return;
