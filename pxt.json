@@ -1,6 +1,6 @@
 {
     "name": "OLED-Display-Fast",
-    "version": "0.0.14",
+    "version": "0.0.15",
     "description": "A Microsoft MakeCode package for Seeed Studio Grove SH1107 OLED with faster bitmap helpers",
     "license": "MIT",
     "dependencies": {

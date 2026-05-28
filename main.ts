@@ -153,6 +153,10 @@ namespace groveoleddisplay {
     {
         private animation16Started = false;
         private animation16Current = 0;
+        private animation16Frame0: number[] = [];
+        private animation16Frame1: number[] = [];
+        private animation16Frame2: number[] = [];
+        private animation16Frame3: number[] = [];
 
 
         private sendData(data:number) {
@@ -590,6 +594,73 @@ namespace groveoleddisplay {
             this.draw16Scale8(y_start, bitmap16);
         }
 
+        private getAnimation16Frame(frame:number): number[] {
+            if (frame == 1 && this.animation16Frame1.length > 0) {
+                return this.animation16Frame1;
+            } else if (frame == 2 && this.animation16Frame2.length > 0) {
+                return this.animation16Frame2;
+            } else if (frame == 3 && this.animation16Frame3.length > 0) {
+                return this.animation16Frame3;
+            }
+            return this.animation16Frame0;
+        }
+
+        /**
+         * Set one 16x16 animation frame.
+         * @param frame frame number, 1 to 4.
+         * @param bitmap16 16x16 image.
+         */
+        //% blockId=grove_oled_set_animation_16_frame block="%oled|Set 16x16 animation frame|%frame|to image|%bitmap16"
+        //% frame.min=1 frame.max=4
+        setAnimation16Frame(frame:number, bitmap16:number[]) {
+            if (frame <= 1) {
+                this.animation16Frame0 = bitmap16;
+            } else if (frame == 2) {
+                this.animation16Frame1 = bitmap16;
+            } else if (frame == 3) {
+                this.animation16Frame2 = bitmap16;
+            } else {
+                this.animation16Frame3 = bitmap16;
+            }
+            this.animation16Started = false;
+            this.animation16Current = 0;
+        }
+
+        /**
+         * Show one step of the registered 16x16 animation. Use frameCount 0 or 1 for a still image.
+         * @param y_start column to start, range from 0 to 127.
+         * @param frameCount number of frames to play, 0 to 4. 0 shows only frame 1.
+         */
+        //% blockId=grove_oled_show_registered_animation_16 block="%oled|Show 16x16 animation at column|%y_start|frames|%frameCount"
+        //% y_start.min=0 y_start.max=127
+        //% frameCount.min=0 frameCount.max=4
+        showRegisteredAnimation16(y_start:number, frameCount:number) {
+            if (this.animation16Frame0.length <= 0) return;
+            if (frameCount < 0) frameCount = 0;
+            if (frameCount > 4) frameCount = 4;
+
+            if (frameCount <= 1) {
+                if (!this.animation16Started || this.animation16Current != 0) {
+                    this.draw16Scale8(y_start, this.animation16Frame0);
+                    this.animation16Started = true;
+                    this.animation16Current = 0;
+                }
+                return;
+            }
+
+            if (!this.animation16Started || this.animation16Current < 0 || this.animation16Current >= frameCount) {
+                this.draw16Scale8(y_start, this.animation16Frame0);
+                this.animation16Started = true;
+                this.animation16Current = 0;
+                return;
+            }
+
+            let next = this.animation16Current + 1;
+            if (next >= frameCount) next = 0;
+            this.draw16Diff(y_start, this.getAnimation16Frame(this.animation16Current), this.getAnimation16Frame(next));
+            this.animation16Current = next;
+        }
+
         private drawAnimation16Frame(y_start:number, frame:number, frame0:number[], frame1:number[], frame2:number[], frame3:number[]) {
             if (frame == 1) {
                 this.draw16Scale8(y_start, frame1);
@@ -634,6 +705,7 @@ namespace groveoleddisplay {
          * @param frame3 fourth 16x16 image.
          */
         //% blockId=grove_oled_show_animation_16_simple block="%oled|Show 16x16 animation at column|%y_start|frames|%frameCount|image 1|%frame0|image 2|%frame1|image 3|%frame2|image 4|%frame3"
+        //% deprecated=true
         //% y_start.min=0 y_start.max=127
         //% frameCount.min=0 frameCount.max=4
         showAnimation16Simple(y_start:number, frameCount:number, frame0:number[], frame1:number[], frame2:number[], frame3:number[]) {
