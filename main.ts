@@ -271,6 +271,16 @@ namespace groveoleddisplay {
             }
         }
 
+        /**
+         * Clear the OLED display.
+         */
+        //% blockId=grove_oled_clear_screen block="%oled|Clear OLED screen"
+        clearScreen() {
+            this.clearDisplayFast();
+            animation16Started = false;
+            animation16Current = 0;
+        }
+
         private putChar(c:number) {
             if (c < 32 || c > 127) {
                 c = 0; // space
@@ -626,13 +636,13 @@ namespace groveoleddisplay {
 
         /**
          * Show one registered 16x16 animation frame.
-         * @param y_start column to start, range from 0 to 127.
          * @param frame frame number, 1 to 4.
+         * @param y_start column to start, range from 0 to 127.
          */
         //% blockId=grove_oled_show_registered_animation_16_frame block="%oled|Show 16x16 animation frame|%frame|at column|%y_start"
-        //% y_start.min=0 y_start.max=127
         //% frame.min=1 frame.max=4
-        showRegisteredAnimation16Frame(y_start:number, frame:number) {
+        //% y_start.min=0 y_start.max=127
+        showRegisteredAnimation16Frame(frame:number, y_start:number) {
             if (animation16Frame0.length <= 0) return;
             if (frame < 1) frame = 1;
             if (frame > 4) frame = 4;
