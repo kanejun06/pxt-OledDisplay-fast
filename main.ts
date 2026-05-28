@@ -577,6 +577,7 @@ namespace groveoleddisplay {
          * @param delay frame delay in milliseconds.
          */
         //% blockId=grove_oled_show_animation_16 block="%oled|Show 16x16 animation at column|%y_start|, frames:|%frames16|frame count|%frameCount|delay(ms)|%delay"
+        //% deprecated=true
         //% y_start.min=0 y_start.max=127
         //% frameCount.min=1 frameCount.max=64
         //% delay.min=20 delay.max=5000
