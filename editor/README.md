@@ -17,7 +17,7 @@ micro:bit + Grove Shield + Grove SH1107 OLED 向けの授業用ドット絵エ�
 生成コードは下記の拡張機能を想定しています。
 
 ```text
-https://github.com/kanejun06/pxt-OledDisplay-fast#v0.0.17
+https://github.com/kanejun06/pxt-OledDisplay-fast#v0.0.18
 ```
 
 ## 主な仕様

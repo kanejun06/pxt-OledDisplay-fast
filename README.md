@@ -11,13 +11,14 @@ It keeps the original API and adds faster helpers for bitmap-heavy lessons:
 - `draw16Diff(column, before16, after16)`
 - `showImage16(column, bitmap16)`
 - `setAnimation16Frame(frame, bitmap16)`
+- `showRegisteredAnimation16Frame(column, frame)`
 - `showRegisteredAnimation16(column, frameCount)`
 - `showAnimation16First(column, frames16)`
 - `showAnimation16Step(column, frames16, frameCount, current)`
 - `drawBitmap16Scale8Fast(column, bitmap16)` as an alias
 
 The fast bitmap helper sends several data bytes in one I2C write instead of resetting the OLED address for every byte.
-Version 0.0.17 adds a startup wait to `createOled()` and classroom-friendly registered animation helpers.
+Version 0.0.18 adds a startup wait to `createOled()` and classroom-friendly registered animation helpers.
 
 ## Dot editor
 
@@ -28,7 +29,7 @@ Open [`editor/index.html`](editor/index.html) in a browser to draw 16x16 bitmap 
 For the current editor output, add this extension URL in MakeCode:
 
 ```text
-https://github.com/kanejun06/pxt-OledDisplay-fast#v0.0.17
+https://github.com/kanejun06/pxt-OledDisplay-fast#v0.0.18
 ```
 
 For a full 128x128 image, use 16 page rows and 128 columns:

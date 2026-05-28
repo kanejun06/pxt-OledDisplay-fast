@@ -625,6 +625,23 @@ namespace groveoleddisplay {
         }
 
         /**
+         * Show one registered 16x16 animation frame.
+         * @param y_start column to start, range from 0 to 127.
+         * @param frame frame number, 1 to 4.
+         */
+        //% blockId=grove_oled_show_registered_animation_16_frame block="%oled|Show 16x16 animation frame|%frame|at column|%y_start"
+        //% y_start.min=0 y_start.max=127
+        //% frame.min=1 frame.max=4
+        showRegisteredAnimation16Frame(y_start:number, frame:number) {
+            if (animation16Frame0.length <= 0) return;
+            if (frame < 1) frame = 1;
+            if (frame > 4) frame = 4;
+            this.draw16Scale8(y_start, this.getAnimation16Frame(frame - 1));
+            animation16Started = true;
+            animation16Current = frame - 1;
+        }
+
+        /**
          * Show one step of the registered 16x16 animation. Use frameCount 0 or 1 for a still image.
          * @param y_start column to start, range from 0 to 127.
          * @param frameCount number of frames to play, 0 to 4. 0 shows only frame 1.
