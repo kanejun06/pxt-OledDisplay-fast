@@ -108,6 +108,8 @@ namespace groveoleddisplay {
     let animation16Frame1: number[] = [];
     let animation16Frame2: number[] = [];
     let animation16Frame3: number[] = [];
+    let animation16Started = false;
+    let animation16Current = 0;
 
     /**
      * Create Grove - Oled Display
@@ -155,10 +157,6 @@ namespace groveoleddisplay {
 
     export class SH1107G 
     {
-        private animation16Started = false;
-        private animation16Current = 0;
-
-
         private sendData(data:number) {
             let buf: Buffer = pins.createBuffer(2);
             buf[0] = 0x40; // SeeedGrayOLED_Data_Mode
@@ -589,8 +587,8 @@ namespace groveoleddisplay {
         //% blockId=grove_oled_show_image_16 block="%oled|Show 16x16 image at column|%y_start|, image:|%bitmap16|"
         //% y_start.min=0 y_start.max=127
         showImage16(y_start:number, bitmap16:number[]) {
-            this.animation16Started = false;
-            this.animation16Current = 0;
+            animation16Started = false;
+            animation16Current = 0;
             this.draw16Scale8(y_start, bitmap16);
         }
 
@@ -622,8 +620,8 @@ namespace groveoleddisplay {
             } else {
                 animation16Frame3 = bitmap16;
             }
-            this.animation16Started = false;
-            this.animation16Current = 0;
+            animation16Started = false;
+            animation16Current = 0;
         }
 
         /**
@@ -640,25 +638,25 @@ namespace groveoleddisplay {
             if (frameCount > 4) frameCount = 4;
 
             if (frameCount <= 1) {
-                if (!this.animation16Started || this.animation16Current != 0) {
+                if (!animation16Started || animation16Current != 0) {
                     this.draw16Scale8(y_start, animation16Frame0);
-                    this.animation16Started = true;
-                    this.animation16Current = 0;
+                    animation16Started = true;
+                    animation16Current = 0;
                 }
                 return;
             }
 
-            if (!this.animation16Started || this.animation16Current < 0 || this.animation16Current >= frameCount) {
+            if (!animation16Started || animation16Current < 0 || animation16Current >= frameCount) {
                 this.draw16Scale8(y_start, animation16Frame0);
-                this.animation16Started = true;
-                this.animation16Current = 0;
+                animation16Started = true;
+                animation16Current = 0;
                 return;
             }
 
-            let next = this.animation16Current + 1;
+            let next = animation16Current + 1;
             if (next >= frameCount) next = 0;
-            this.draw16Diff(y_start, this.getAnimation16Frame(this.animation16Current), this.getAnimation16Frame(next));
-            this.animation16Current = next;
+            this.draw16Diff(y_start, this.getAnimation16Frame(animation16Current), this.getAnimation16Frame(next));
+            animation16Current = next;
         }
 
         private drawAnimation16Frame(y_start:number, frame:number, frame0:number[], frame1:number[], frame2:number[], frame3:number[]) {
@@ -713,25 +711,25 @@ namespace groveoleddisplay {
             if (frameCount > 4) frameCount = 4;
 
             if (frameCount <= 1) {
-                if (!this.animation16Started || this.animation16Current != 0) {
+                if (!animation16Started || animation16Current != 0) {
                     this.draw16Scale8(y_start, frame0);
-                    this.animation16Started = true;
-                    this.animation16Current = 0;
+                    animation16Started = true;
+                    animation16Current = 0;
                 }
                 return;
             }
 
-            if (!this.animation16Started || this.animation16Current < 0 || this.animation16Current >= frameCount) {
+            if (!animation16Started || animation16Current < 0 || animation16Current >= frameCount) {
                 this.draw16Scale8(y_start, frame0);
-                this.animation16Started = true;
-                this.animation16Current = 0;
+                animation16Started = true;
+                animation16Current = 0;
                 return;
             }
 
-            let next = this.animation16Current + 1;
+            let next = animation16Current + 1;
             if (next >= frameCount) next = 0;
-            this.drawAnimation16Diff(y_start, this.animation16Current, next, frame0, frame1, frame2, frame3);
-            this.animation16Current = next;
+            this.drawAnimation16Diff(y_start, animation16Current, next, frame0, frame1, frame2, frame3);
+            animation16Current = next;
         }
 
         /**
