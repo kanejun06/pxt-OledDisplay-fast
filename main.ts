@@ -111,6 +111,22 @@ namespace groveoleddisplay {
     //% blockId=grove_oled_create block="Create Oled Display"
     export function createOled(): SH1107G
     {
+        basic.pause(1000);
+        let oled = new SH1107G();
+        
+        oled.init();
+        oled.clearDisplayFast();
+        
+        return oled;
+    }
+
+    /**
+     * Create Grove - Oled Display without startup wait
+     */
+    //% blockId=grove_oled_create_now block="Create Oled Display Now"
+    //% advanced=true
+    export function createOledNow(): SH1107G
+    {
         let oled = new SH1107G();
         
         oled.init();
@@ -567,6 +583,39 @@ namespace groveoleddisplay {
         //% y_start.min=0 y_start.max=127
         showImage16(y_start:number, bitmap16:number[]) {
             this.draw16Scale8(y_start, bitmap16);
+        }
+
+        /**
+         * Draw the first frame of a 16x16 animation
+         * @param y_start column to start, range from 0 to 127.
+         * @param frames16 flattened 16x16 frame bytes, 32 bytes per frame.
+         */
+        //% blockId=grove_oled_show_animation_16_first block="%oled|Show first 16x16 animation frame at column|%y_start|, frames:|%frames16|"
+        //% y_start.min=0 y_start.max=127
+        showAnimation16First(y_start:number, frames16:number[]) {
+            this.draw16Scale8Flat(y_start, frames16, 0);
+        }
+
+        /**
+         * Draw one changed animation step and return the next frame index
+         * @param y_start column to start, range from 0 to 127.
+         * @param frames16 flattened 16x16 frame bytes, 32 bytes per frame.
+         * @param frameCount number of frames.
+         * @param current current frame index.
+         */
+        //% blockId=grove_oled_show_animation_16_step block="%oled|Show next 16x16 animation frame at column|%y_start|, frames:|%frames16|frame count|%frameCount|current|%current"
+        //% y_start.min=0 y_start.max=127
+        //% frameCount.min=1 frameCount.max=64
+        //% current.min=0 current.max=63
+        showAnimation16Step(y_start:number, frames16:number[], frameCount:number, current:number): number {
+            if (frameCount <= 0) return 0;
+            let maxFrames = Math.floor(frames16.length / 32);
+            if (frameCount > maxFrames) frameCount = maxFrames;
+            if (frameCount <= 0) return 0;
+            if (current < 0 || current >= frameCount) current = 0;
+            let next = (current + 1) % frameCount;
+            this.draw16DiffFlat(y_start, frames16, current, next);
+            return next;
         }
 
         /**
