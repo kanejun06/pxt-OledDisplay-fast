@@ -570,7 +570,7 @@ namespace groveoleddisplay {
         }
 
         /**
-         * Show 16x16 animation scaled to 128x128 in the background
+         * Show 16x16 animation scaled to 128x128
          * @param y_start column to start, range from 0 to 127.
          * @param frames16 flattened 16x16 frame bytes, 32 bytes per frame.
          * @param frameCount number of frames.
@@ -582,18 +582,18 @@ namespace groveoleddisplay {
         //% delay.min=20 delay.max=5000
         showAnimation16(y_start:number, frames16:number[], frameCount:number, delay:number) {
             if (frameCount <= 0) return;
+            let maxFrames = Math.floor(frames16.length / 32);
+            if (frameCount > maxFrames) frameCount = maxFrames;
+            if (frameCount <= 0) return;
             if (delay < 20) delay = 20;
-            let oled = this;
-            control.inBackground(function () {
-                let current = 0;
-                oled.draw16Scale8Flat(y_start, frames16, 0);
-                while (true) {
-                    let next = (current + 1) % frameCount;
-                    oled.draw16DiffFlat(y_start, frames16, current, next);
-                    current = next;
-                    basic.pause(delay);
-                }
-            });
+            let current = 0;
+            this.draw16Scale8Flat(y_start, frames16, 0);
+            while (true) {
+                let next = (current + 1) % frameCount;
+                this.draw16DiffFlat(y_start, frames16, current, next);
+                current = next;
+                basic.pause(delay);
+            }
         }
 
         private drawPixel(x: number, y:number, data:number) {
