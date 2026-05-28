@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SH1107 MakeCode Dot Editor</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-label="ドット絵エディタ">
+        <header class="topbar">
+          <div>
+            <h1>SH1107 Dot Editor</h1>
+            <p>micro:bit + Grove SH1107 OLED 用 MakeCode 生成</p>
+          </div>
+          <div class="actions">
+            <span id="copyNotice" class="copy-notice" role="status" aria-live="polite"></span>
+            <button id="copyCode" class="primary" type="button">コードをコピー</button>
+            <button id="downloadPng" type="button">PNG保存</button>
+          </div>
+        </header>
+
+        <div class="editor-layout">
+          <aside class="panel controls" aria-label="ツール">
+            <fieldset>
+              <legend>モード</legend>
+              <div class="segmented" id="modeButtons">
+                <button type="button" data-mode="single" class="active">1枚画像</button>
+                <button type="button" data-mode="animation">アニメーション</button>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>アニメーション</legend>
+              <div class="animation-controls" id="animationControls">
+                <div class="button-grid">
+                <button type="button" id="addFrame">追加</button>
+                <button type="button" id="duplicateFrame">複製</button>
+                <button type="button" id="deleteFrame">削除</button>
+                <button type="button" id="playPreview">再生</button>
+                </div>
+                <label>
+                  間隔(ms)
+                  <input id="frameDelay" type="number" min="20" max="5000" step="10" value="120" />
+                </label>
+                <div class="frame-strip" id="frameStrip" aria-label="フレーム一覧"></div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>サイズ</legend>
+              <div class="segmented" id="sizeButtons">
+                <button type="button" data-size="16" class="active">16</button>
+                <button type="button" data-size="32">32</button>
+                <button type="button" data-size="64">64</button>
+                <button type="button" data-size="128">128</button>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>編集</legend>
+              <label class="toggle">
+                <input id="showGrid" type="checkbox" checked />
+                グリッド
+              </label>
+              <div class="button-grid">
+                <button type="button" id="invert">反転</button>
+                <button type="button" id="flipH">左右反転</button>
+                <button type="button" id="flipV">上下反転</button>
+                <button type="button" id="clear">消去</button>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>SH1107出力</legend>
+              <label>
+                変数名
+                <input id="varName" value="bitmap16" spellcheck="false" />
+              </label>
+              <div class="xy-inputs">
+                <label>
+                  X
+                  <input id="drawX" type="number" min="0" max="127" value="0" />
+                </label>
+                <label>
+                  Y
+                  <input id="drawY" type="number" min="0" max="127" value="0" />
+                </label>
+              </div>
+              <label>
+                表示倍率
+                <select id="scaleMode">
+                  <option value="1">1x</option>
+                  <option value="2">2x</option>
+                  <option value="4">4x</option>
+                  <option value="8">8x</option>
+                  <option value="fit" selected>OLEDいっぱい</option>
+                </select>
+              </label>
+              <label>
+                出力方式
+                <select id="outputMode">
+                  <option value="auto">自動</option>
+                  <option value="bitmap" selected>bitmap</option>
+                </select>
+              </label>
+              <label>
+                ライブラリ
+                <select id="libraryMode">
+                  <option value="standard">標準</option>
+                  <option value="fast" selected>高速fork</option>
+                </select>
+              </label>
+              <label>
+                byte順
+                <select id="byteOrder">
+                  <option value="page">ページ優先</option>
+                  <option value="column">列優先</option>
+                </select>
+              </label>
+            </fieldset>
+          </aside>
+
+          <section class="canvas-area">
+            <div class="canvas-frame">
+              <canvas id="editorCanvas" width="640" height="640" aria-label="ドット絵キャンバス"></canvas>
+            </div>
+            <div class="under-tools">
+              <label class="import-button">
+                PNG読込
+                <input id="pngInput" type="file" accept="image/png,image/jpeg,image/webp" />
+              </label>
+              <span id="status" role="status">32 x 32 / 128 bytes</span>
+            </div>
+          </section>
+
+          <aside class="panel output" aria-label="MakeCode出力">
+            <div class="preview-wrap">
+              <canvas id="previewCanvas" width="128" height="128" aria-label="OLEDプレビュー"></canvas>
+            </div>
+            <label>
+              MakeCode JavaScript
+              <textarea id="codeOutput" spellcheck="false"></textarea>
+            </label>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js?v=20260528-play-button-blue-001"></script>
+  </body>
+</html>
