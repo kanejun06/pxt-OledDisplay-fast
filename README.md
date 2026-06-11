@@ -2,6 +2,16 @@
 
 This is a classroom-oriented fork of the MakeCode Grove - Oled Display(SH1107) package for micro:bit.
 
+## OLED の使い方
+
+最初にMakeCodeで新しいプロジェクトを開き、`拡張機能` の検索欄へ次のURLを貼り付けて、`OLED-Display-Fast` を追加します。
+
+```text
+https://github.com/kanejun06/pxt-OledDisplay-fast#v0.0.20
+```
+
+拡張機能を追加すると、`OLED Display` のブロックと、エディタが生成する高速アニメーション用関数を使えるようになります。
+
 It keeps the original API and adds faster helpers for bitmap-heavy lessons:
 
 - `clearDisplayFast()`

@@ -431,17 +431,24 @@ function makeAnimationCode() {
   const registrations = [];
   const players = [];
   banks.forEach((bank, bankIndex) => {
+    const bankNumber = bankIndex + 1;
     bank.frames.slice(0, MAX_FRAMES).forEach((frame, frameIndex) => {
-      const name = `${baseName}_b${bankIndex + 1}_f${frameIndex + 1}`;
+      const name = `${baseName}_b${bankNumber}_f${frameIndex + 1}`;
       declarations.push(`let ${name} = [\n${formatByteRows(makeSourceBitmapBytesFor(frame.pixels))}\n]`);
-      registrations.push(`oled.setBankAnimationFrame(${bankIndex + 1}, ${frameIndex + 1}, ${name})`);
+      registrations.push(`oled.setBankAnimationFrame(${bankNumber}, ${frameIndex + 1}, ${name})`);
     });
-    players.push(`function playBank${bankIndex + 1}() {
-  oled.playBankAnimation(${bankIndex + 1}, ${bank.startFrame}, ${bank.endFrame})
+    players.push(`function playBank${bankNumber}() {
+  if (activeAnimationBank != ${bankNumber}) {
+    oled.showBankAnimationFrame(${bankNumber}, ${bank.startFrame})
+    activeAnimationBank = ${bankNumber}
+  } else {
+    oled.playBankAnimation(${bankNumber}, ${bank.startFrame}, ${bank.endFrame})
+  }
   basic.pause(${bank.delay})
 }`);
   });
   return `let oled = groveoleddisplay.createOled()
+let activeAnimationBank = 0
 
 ${declarations.join("\n\n")}
 
@@ -450,7 +457,14 @@ ${registrations.join("\n")}
 ${players.join("\n\n")}
 
 basic.forever(function () {
-  playBank1()
+  if (input.buttonIsPressed(Button.A)) {
+    playBank1()
+  } else if (input.buttonIsPressed(Button.B)) {
+    playBank2()
+  } else if (activeAnimationBank != 0) {
+    oled.clearDisplayFast()
+    activeAnimationBank = 0
+  }
 })`;
 }
 
