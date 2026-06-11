@@ -26,7 +26,7 @@ const MAX_BANKS = 4;
 const MAX_FRAMES = 8;
 
 let size = 16;
-let editorMode = "single";
+let editorMode = "animation";
 let banks = Array.from({ length: MAX_BANKS }, () => createBank());
 let currentBank = 0;
 let frames = banks[0].frames;
