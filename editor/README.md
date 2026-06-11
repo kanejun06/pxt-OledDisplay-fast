@@ -1,35 +1,56 @@
 # SH1107 MakeCode Dot Editor
 
-micro:bit + Grove Shield + Grove SH1107 OLED 向けの授業用ドット絵エディタです。
+micro:bit + Grove Shield + Grove SH1107 OLED向けのドット絵エディタです。
 
-`index.html` をブラウザで開くと使えます。描いた16x16ドット絵から、MakeCode JavaScript に貼り付けるコードを生成します。
+## 主な機能
 
-## 使い方
+- 16x16の1枚画像
+- 最大8コマのアニメーション
+- 4つのアニメーションバンク
+- バンクごとの開始・終了フレーム、再生間隔
+- MakeCode JavaScriptの生成
+- PNGの読み込みと保存
+- アンドゥ、リドゥ
 
-1. `index.html` をブラウザで開く
-2. `1枚画像` または `アニメーション` を選ぶ
-3. ドットをクリック/ドラッグして描く
-4. `コードをコピー` または `c` キーでMakeCode用コードをコピー
-5. MakeCode JavaScriptに貼り付ける
+## 授業での使い方
 
-## MakeCode拡張
+1. `1枚画像` または `アニメーション` を選ぶ
+2. 16x16のキャンバスに絵を描く
+3. アニメーションではバンク、フレーム範囲、再生間隔を設定する
+4. `コードをコピー` を押す
+5. MakeCodeのJavaScript画面へ貼り付ける
 
-生成コードは下記の拡張機能を想定しています。
+`C` キーでもコードをコピーできます。`Cmd+Z` / `Ctrl+Z` でアンドゥ、`Cmd+Shift+Z` / `Ctrl+Y` でリドゥできます。
 
-```text
-https://github.com/kanejun06/pxt-OledDisplay-fast#v0.0.19
+## 4バンク出力
+
+アニメーション出力では、4バンクすべての画像と設定を1つのMakeCodeプログラムへ出力します。
+
+```typescript
+playBank1()
+playBank2()
+playBank3()
+playBank4()
 ```
 
-## 主な仕様
+生成コードには上記の再生関数が含まれます。初期状態では `ずっと` の中でバンク1を再生します。呼び出す関数を変更すると、別のバンクを再生できます。
 
-- 初期設定は `16x16`、`OLEDいっぱい`、`bitmap`、`高速fork`
-- 1枚画像は `showImage16()` を使って表示
-- アニメーションは `setAnimation16Frame()` と `showRegisteredAnimation16()` を使って表示
-- アニメーション速度は `間隔(ms)` と MakeCode の `basic.pause()` で制御
-- ドット描画は、最初に触ったマスに応じてドラッグ中の描画/消去モードを固定
-- `Cmd+Z` / `Ctrl+Z` でアンドゥ、`Cmd+Shift+Z` / `Ctrl+Y` でリドゥ
-- アニメーションモードでフレームが1枚だけのとき、`削除` は画面クリアとして動作
+ライブラリの基本ブロックは次の3つです。
 
-## 注意
+```typescript
+oled.setBankAnimationFrame(bank, frame, bitmap16)
+oled.showBankAnimationFrame(bank, frame)
+oled.playBankAnimation(bank, startFrame, endFrame)
+```
 
-MakeCodeで古い拡張が残っていると、`setAnimation16Frame` や `showRegisteredAnimation16` が存在しないというエラーになります。その場合は `OLED-Display-Fast` を削除してから、上記URLで入れ直してください。
+OLED全画面へ表示するため、columnは常に0としてライブラリ内部で処理します。
+
+## MakeCode拡張機能
+
+MakeCodeの拡張機能には次のURLを指定します。
+
+```text
+https://github.com/kanejun06/pxt-OledDisplay-fast#v0.0.20
+```
+
+大きなbitmap配列はブロック表示で縦長になるため、画像データはJavaScript側で管理する運用を推奨します。

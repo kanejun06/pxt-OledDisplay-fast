@@ -34,16 +34,35 @@
             <fieldset>
               <legend>アニメーション</legend>
               <div class="animation-controls" id="animationControls">
-                <div class="button-grid">
-                <button type="button" id="addFrame">追加</button>
-                <button type="button" id="duplicateFrame">複製</button>
-                <button type="button" id="deleteFrame">削除</button>
-                <button type="button" id="playPreview">再生</button>
-                </div>
                 <label>
-                  間隔(ms)
-                  <input id="frameDelay" type="number" min="20" max="5000" step="10" value="120" />
+                  バンク
+                  <div class="segmented bank-buttons" id="bankButtons">
+                    <button type="button" data-bank="0" class="active">1</button>
+                    <button type="button" data-bank="1">2</button>
+                    <button type="button" data-bank="2">3</button>
+                    <button type="button" data-bank="3">4</button>
+                  </div>
                 </label>
+                <div class="button-grid">
+                  <button type="button" id="addFrame">追加</button>
+                  <button type="button" id="duplicateFrame">複製</button>
+                  <button type="button" id="deleteFrame">削除</button>
+                  <button type="button" id="playPreview">再生</button>
+                </div>
+                <div class="range-inputs">
+                  <label>
+                    開始
+                    <input id="startFrame" type="number" min="1" max="8" value="1" />
+                  </label>
+                  <label>
+                    終了
+                    <input id="endFrame" type="number" min="1" max="8" value="1" />
+                  </label>
+                  <label>
+                    間隔(ms)
+                    <input id="frameDelay" type="number" min="20" max="5000" step="10" value="120" />
+                  </label>
+                </div>
                 <div class="frame-strip" id="frameStrip" aria-label="フレーム一覧"></div>
               </div>
             </fieldset>
@@ -78,16 +97,6 @@
                 変数名
                 <input id="varName" value="bitmap16" spellcheck="false" />
               </label>
-              <div class="xy-inputs">
-                <label>
-                  X
-                  <input id="drawX" type="number" min="0" max="127" value="0" />
-                </label>
-                <label>
-                  Y
-                  <input id="drawY" type="number" min="0" max="127" value="0" />
-                </label>
-              </div>
               <label>
                 表示倍率
                 <select id="scaleMode">
@@ -148,6 +157,6 @@
       </section>
     </main>
 
-    <script src="./app.js?v=20260528-play-button-blue-001"></script>
+    <script src="./app.js?v=20260611-four-banks-001"></script>
   </body>
 </html>

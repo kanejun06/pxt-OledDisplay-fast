@@ -1,17 +1,12 @@
-let oled: groveoleddisplay.SH1107G;
-oled.init();
-oled.clearDisplay();
+let oled = groveoleddisplay.createOled()
+let testFrame = [
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+]
 
-oled.drawRec(63,63,67,67);
-oled.drawRec(42,0,100,80);
-// oled.setTextXY(0, 0);
-// oled.putString("hello");
-
-oled.setTextXY(64, 0);
-oled.putString("world");
-
-
-basic.forever(() => {
-    basic.showNumber(200);
-    basic.pause(250);
-})
+oled.setBankAnimationFrame(1, 1, testFrame)
+oled.showBankAnimationFrame(1, 1)
+oled.playBankAnimation(1, 1, 1)
+oled.clearScreen()

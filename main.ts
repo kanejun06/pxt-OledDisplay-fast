@@ -110,6 +110,54 @@ namespace groveoleddisplay {
     let animation16Frame3: number[] = [];
     let animation16Started = false;
     let animation16Current = 0;
+    let bank1Frame1: number[] = [];
+    let bank1Frame2: number[] = [];
+    let bank1Frame3: number[] = [];
+    let bank1Frame4: number[] = [];
+    let bank1Frame5: number[] = [];
+    let bank1Frame6: number[] = [];
+    let bank1Frame7: number[] = [];
+    let bank1Frame8: number[] = [];
+    let bank2Frame1: number[] = [];
+    let bank2Frame2: number[] = [];
+    let bank2Frame3: number[] = [];
+    let bank2Frame4: number[] = [];
+    let bank2Frame5: number[] = [];
+    let bank2Frame6: number[] = [];
+    let bank2Frame7: number[] = [];
+    let bank2Frame8: number[] = [];
+    let bank3Frame1: number[] = [];
+    let bank3Frame2: number[] = [];
+    let bank3Frame3: number[] = [];
+    let bank3Frame4: number[] = [];
+    let bank3Frame5: number[] = [];
+    let bank3Frame6: number[] = [];
+    let bank3Frame7: number[] = [];
+    let bank3Frame8: number[] = [];
+    let bank4Frame1: number[] = [];
+    let bank4Frame2: number[] = [];
+    let bank4Frame3: number[] = [];
+    let bank4Frame4: number[] = [];
+    let bank4Frame5: number[] = [];
+    let bank4Frame6: number[] = [];
+    let bank4Frame7: number[] = [];
+    let bank4Frame8: number[] = [];
+    let bank1Current = 0;
+    let bank2Current = 0;
+    let bank3Current = 0;
+    let bank4Current = 0;
+    let bank1RangeStart = 0;
+    let bank2RangeStart = 0;
+    let bank3RangeStart = 0;
+    let bank4RangeStart = 0;
+    let bank1RangeEnd = 0;
+    let bank2RangeEnd = 0;
+    let bank3RangeEnd = 0;
+    let bank4RangeEnd = 0;
+    let bank1Started = false;
+    let bank2Started = false;
+    let bank3Started = false;
+    let bank4Started = false;
 
     /**
      * Create Grove - Oled Display
@@ -279,6 +327,10 @@ namespace groveoleddisplay {
             this.clearDisplayFast();
             animation16Started = false;
             animation16Current = 0;
+            this.resetBankAnimation(1);
+            this.resetBankAnimation(2);
+            this.resetBankAnimation(3);
+            this.resetBankAnimation(4);
         }
 
         private putChar(c:number) {
@@ -611,6 +663,225 @@ namespace groveoleddisplay {
                 return animation16Frame3;
             }
             return animation16Frame0;
+        }
+
+        private getBankAnimationFrame(bank:number, frame:number): number[] {
+            if (bank == 2) {
+                if (frame == 2) return bank2Frame2;
+                if (frame == 3) return bank2Frame3;
+                if (frame == 4) return bank2Frame4;
+                if (frame == 5) return bank2Frame5;
+                if (frame == 6) return bank2Frame6;
+                if (frame == 7) return bank2Frame7;
+                if (frame == 8) return bank2Frame8;
+                return bank2Frame1;
+            } else if (bank == 3) {
+                if (frame == 2) return bank3Frame2;
+                if (frame == 3) return bank3Frame3;
+                if (frame == 4) return bank3Frame4;
+                if (frame == 5) return bank3Frame5;
+                if (frame == 6) return bank3Frame6;
+                if (frame == 7) return bank3Frame7;
+                if (frame == 8) return bank3Frame8;
+                return bank3Frame1;
+            } else if (bank == 4) {
+                if (frame == 2) return bank4Frame2;
+                if (frame == 3) return bank4Frame3;
+                if (frame == 4) return bank4Frame4;
+                if (frame == 5) return bank4Frame5;
+                if (frame == 6) return bank4Frame6;
+                if (frame == 7) return bank4Frame7;
+                if (frame == 8) return bank4Frame8;
+                return bank4Frame1;
+            }
+            if (frame == 2) return bank1Frame2;
+            if (frame == 3) return bank1Frame3;
+            if (frame == 4) return bank1Frame4;
+            if (frame == 5) return bank1Frame5;
+            if (frame == 6) return bank1Frame6;
+            if (frame == 7) return bank1Frame7;
+            if (frame == 8) return bank1Frame8;
+            return bank1Frame1;
+        }
+
+        private resetBankAnimation(bank:number) {
+            if (bank == 2) {
+                bank2Started = false;
+                bank2Current = 0;
+            } else if (bank == 3) {
+                bank3Started = false;
+                bank3Current = 0;
+            } else if (bank == 4) {
+                bank4Started = false;
+                bank4Current = 0;
+            } else {
+                bank1Started = false;
+                bank1Current = 0;
+            }
+        }
+
+        private getBankAnimationCurrent(bank:number): number {
+            if (bank == 2) return bank2Current;
+            if (bank == 3) return bank3Current;
+            if (bank == 4) return bank4Current;
+            return bank1Current;
+        }
+
+        private getBankAnimationStarted(bank:number): boolean {
+            if (bank == 2) return bank2Started;
+            if (bank == 3) return bank3Started;
+            if (bank == 4) return bank4Started;
+            return bank1Started;
+        }
+
+        private getBankAnimationRangeStart(bank:number): number {
+            if (bank == 2) return bank2RangeStart;
+            if (bank == 3) return bank3RangeStart;
+            if (bank == 4) return bank4RangeStart;
+            return bank1RangeStart;
+        }
+
+        private getBankAnimationRangeEnd(bank:number): number {
+            if (bank == 2) return bank2RangeEnd;
+            if (bank == 3) return bank3RangeEnd;
+            if (bank == 4) return bank4RangeEnd;
+            return bank1RangeEnd;
+        }
+
+        private setBankAnimationState(bank:number, started:boolean, current:number, rangeStart:number, rangeEnd:number) {
+            if (bank == 2) {
+                bank2Started = started;
+                bank2Current = current;
+                bank2RangeStart = rangeStart;
+                bank2RangeEnd = rangeEnd;
+            } else if (bank == 3) {
+                bank3Started = started;
+                bank3Current = current;
+                bank3RangeStart = rangeStart;
+                bank3RangeEnd = rangeEnd;
+            } else if (bank == 4) {
+                bank4Started = started;
+                bank4Current = current;
+                bank4RangeStart = rangeStart;
+                bank4RangeEnd = rangeEnd;
+            } else {
+                bank1Started = started;
+                bank1Current = current;
+                bank1RangeStart = rangeStart;
+                bank1RangeEnd = rangeEnd;
+            }
+        }
+
+        /**
+         * Register one frame in an animation bank.
+         * @param bank animation bank, 1 to 4.
+         * @param frame frame number, 1 to 8.
+         * @param bitmap16 16x16 image.
+         */
+        //% blockId=grove_oled_set_bank_animation_frame block="%oled|Set animation bank|%bank|frame|%frame|to image|%bitmap16"
+        //% bank.min=1 bank.max=4
+        //% frame.min=1 frame.max=8
+        setBankAnimationFrame(bank:number, frame:number, bitmap16:number[]) {
+            if (bank < 1) bank = 1;
+            if (bank > 4) bank = 4;
+            if (frame < 1) frame = 1;
+            if (frame > 8) frame = 8;
+
+            if (bank == 2) {
+                if (frame == 1) bank2Frame1 = bitmap16;
+                else if (frame == 2) bank2Frame2 = bitmap16;
+                else if (frame == 3) bank2Frame3 = bitmap16;
+                else if (frame == 4) bank2Frame4 = bitmap16;
+                else if (frame == 5) bank2Frame5 = bitmap16;
+                else if (frame == 6) bank2Frame6 = bitmap16;
+                else if (frame == 7) bank2Frame7 = bitmap16;
+                else bank2Frame8 = bitmap16;
+            } else if (bank == 3) {
+                if (frame == 1) bank3Frame1 = bitmap16;
+                else if (frame == 2) bank3Frame2 = bitmap16;
+                else if (frame == 3) bank3Frame3 = bitmap16;
+                else if (frame == 4) bank3Frame4 = bitmap16;
+                else if (frame == 5) bank3Frame5 = bitmap16;
+                else if (frame == 6) bank3Frame6 = bitmap16;
+                else if (frame == 7) bank3Frame7 = bitmap16;
+                else bank3Frame8 = bitmap16;
+            } else if (bank == 4) {
+                if (frame == 1) bank4Frame1 = bitmap16;
+                else if (frame == 2) bank4Frame2 = bitmap16;
+                else if (frame == 3) bank4Frame3 = bitmap16;
+                else if (frame == 4) bank4Frame4 = bitmap16;
+                else if (frame == 5) bank4Frame5 = bitmap16;
+                else if (frame == 6) bank4Frame6 = bitmap16;
+                else if (frame == 7) bank4Frame7 = bitmap16;
+                else bank4Frame8 = bitmap16;
+            } else {
+                if (frame == 1) bank1Frame1 = bitmap16;
+                else if (frame == 2) bank1Frame2 = bitmap16;
+                else if (frame == 3) bank1Frame3 = bitmap16;
+                else if (frame == 4) bank1Frame4 = bitmap16;
+                else if (frame == 5) bank1Frame5 = bitmap16;
+                else if (frame == 6) bank1Frame6 = bitmap16;
+                else if (frame == 7) bank1Frame7 = bitmap16;
+                else bank1Frame8 = bitmap16;
+            }
+            this.resetBankAnimation(bank);
+        }
+
+        /**
+         * Show one frame from an animation bank.
+         * @param bank animation bank, 1 to 4.
+         * @param frame frame number, 1 to 8.
+         */
+        //% blockId=grove_oled_show_bank_animation_frame block="%oled|Show animation bank|%bank|frame|%frame"
+        //% bank.min=1 bank.max=4
+        //% frame.min=1 frame.max=8
+        showBankAnimationFrame(bank:number, frame:number) {
+            if (bank < 1) bank = 1;
+            if (bank > 4) bank = 4;
+            if (frame < 1) frame = 1;
+            if (frame > 8) frame = 8;
+            let bitmap16 = this.getBankAnimationFrame(bank, frame);
+            if (bitmap16.length <= 0) return;
+            this.draw16Scale8(0, bitmap16);
+            this.setBankAnimationState(bank, true, frame, frame, frame);
+        }
+
+        /**
+         * Advance one step of an animation bank.
+         * @param bank animation bank, 1 to 4.
+         * @param startFrame first frame to play, 1 to 8.
+         * @param endFrame last frame to play, 1 to 8.
+         */
+        //% blockId=grove_oled_play_bank_animation block="%oled|Play animation bank|%bank|from frame|%startFrame|to frame|%endFrame"
+        //% bank.min=1 bank.max=4
+        //% startFrame.min=1 startFrame.max=8
+        //% endFrame.min=1 endFrame.max=8
+        playBankAnimation(bank:number, startFrame:number, endFrame:number) {
+            if (bank < 1) bank = 1;
+            if (bank > 4) bank = 4;
+            if (startFrame < 1) startFrame = 1;
+            if (startFrame > 8) startFrame = 8;
+            if (endFrame < startFrame) endFrame = startFrame;
+            if (endFrame > 8) endFrame = 8;
+
+            let first = this.getBankAnimationFrame(bank, startFrame);
+            if (first.length <= 0) return;
+            let current = this.getBankAnimationCurrent(bank);
+            let rangeChanged = this.getBankAnimationRangeStart(bank) != startFrame || this.getBankAnimationRangeEnd(bank) != endFrame;
+
+            if (!this.getBankAnimationStarted(bank) || rangeChanged || current < startFrame || current > endFrame) {
+                this.draw16Scale8(0, first);
+                this.setBankAnimationState(bank, true, startFrame, startFrame, endFrame);
+                return;
+            }
+
+            let next = current + 1;
+            if (next > endFrame) next = startFrame;
+            let before = this.getBankAnimationFrame(bank, current);
+            let after = this.getBankAnimationFrame(bank, next);
+            if (before.length <= 0 || after.length <= 0) return;
+            this.draw16Diff(0, before, after);
+            this.setBankAnimationState(bank, true, next, startFrame, endFrame);
         }
 
         /**
