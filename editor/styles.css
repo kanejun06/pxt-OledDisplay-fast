@@ -194,6 +194,7 @@ legend {
 .bank-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 16px;
 }
 
 .range-inputs {
